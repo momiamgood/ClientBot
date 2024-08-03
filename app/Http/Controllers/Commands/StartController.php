@@ -11,6 +11,6 @@ class StartController extends Controller
 
     public function __invoke(Nutgram $bot): void
     {
-        $bot->sendMessage(view('start'));
+        $bot->sendMessage(view($this->templateName));
     }
 }
