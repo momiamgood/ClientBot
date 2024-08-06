@@ -48,7 +48,8 @@ class OrderConversation extends Conversation
         $template = 'order.steps.second_step';
         $this->order = Order::create([
             'text' => $bot->message()->getText(),
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
+            'status' => Order::STATUS_NEW
         ]);
 
         $bot->sendMessage(text: view($template));
@@ -60,22 +61,9 @@ class OrderConversation extends Conversation
      * @return void
      * @throws \Psr\SimpleCache\InvalidArgumentException
      *
-     * Завершение заполнения заявки
+     * Завершение заполнения заявки, отправка карточки заказа в административный чат
+     *
      */
-
-    public function thirdStep(Nutgram $bot): void
-    {
-        $template = 'order.steps.third_step';
-        $this->user::update([
-           'phone' => $bot->message()->getText()
-        ]);
-
-        $bot->sendMessage(text: view($template));
-
-        $this->next('thirdStep');
-    }
-
-
     public function orderCreated(Nutgram $bot): void
     {
         $template = 'order.created';
