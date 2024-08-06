@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\Client\Handlers;
 
 use App\Models\Order;
-use App\Models\Product;
-use App\Models\Template;
 use App\Models\User;
 use App\Traits\KeyboardTrait;
 use SergiX44\Nutgram\Conversations\Conversation;
 use SergiX44\Nutgram\Nutgram;
-use function Laravel\Prompts\text;
 
 class OrderConversation extends Conversation
 {
@@ -19,6 +16,14 @@ class OrderConversation extends Conversation
     private User $user;
     protected ?string $step = 'firstStep';
 
+    /**
+     * @param Nutgram $bot
+     * @return void
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     *
+     * Запрашиваем описание заказа
+     *
+     */
     public function firstStep(Nutgram $bot): void
     {
         $this->user = User::where('chat_id', $bot->chatId());
@@ -28,6 +33,15 @@ class OrderConversation extends Conversation
 
         $this->next('secondStep');
     }
+
+    /**
+     * @param Nutgram $bot
+     * @return void
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     *
+     * Запрашиваем номер телефона
+     *
+     */
 
     public function secondStep(Nutgram $bot): void
     {
@@ -41,12 +55,19 @@ class OrderConversation extends Conversation
         $this->next('thirdStep');
     }
 
+    /**
+     * @param Nutgram $bot
+     * @return void
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     *
+     * Завершение заполнения заявки
+     */
 
     public function thirdStep(Nutgram $bot): void
     {
         $template = 'order.steps.third_step';
         $this->user::update([
-           'phone_number' => ''
+           'phone' => $bot->message()->getText()
         ]);
 
         $bot->sendMessage(text: view($template));
