@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Client\Conversations;
 
-use App\Events\OrderCompleted;
-use App\Listeners\SendOrderToAdminChat;
 use App\Models\Order;
 use App\Models\User;
 use App\Traits\KeyboardTrait;
@@ -82,17 +80,49 @@ class OrderConversation extends Conversation
      */
     public function askNumber(Nutgram $bot): void
     {
-        if ($this->user->phone) {
+        $next = 'handleNumber';
+        if ($this->user->phone and $this->user->full_name) {
             $this->orderCreated($bot);
             return;
+        } else if (!$this->user->full_name) {
+            $next = 'askFullName';
         }
 
         Log::debug('askNumber');
 
         $bot->sendMessage('Наипшите актульаный телефон для связи:', $bot->chatId());
 
-        $this->next('handleNumber');
+        $this->next($next);
     }
+
+    /**
+     * @param Nutgram $bot
+     * @return void
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     *
+     * Запрашиваем полное имя пользователя
+     *
+     */
+    public function askFullName(Nutgram $bot): void
+    {
+        Log::debug('askFullName');
+        $bot->sendMessage('Как к вам обращаться?');
+
+        $this->next('handleFullName');
+    }
+
+
+    public function handleFullName(Nutgram $bot): void
+    {
+        Log::debug('handleFullName, data: ' . $bot->message()->getText());
+
+        $this->user->update([
+            'full_name' => $bot->message()->getText()
+        ]);
+
+        $this->orderCreated($bot);
+    }
+
 
     /**
      * @param Nutgram $bot
@@ -138,8 +168,8 @@ class OrderConversation extends Conversation
             chat_id: config('chats.admin'),
             reply_markup: InlineKeyboardMarkup::make()
                 ->addRow(
-                    InlineKeyboardButton::make('Подтвержден', callback_data: 'order_set_status:'. Order::STATUS_APPROVED . ':'. $this->order->id),
-                    InlineKeyboardButton::make( 'Отменен', callback_data: 'order_set_status:'. Order::STATUS_REJECT . ':'. $this->order->id),
+                    InlineKeyboardButton::make('Подтвержден', callback_data: 'order_set_status:' . Order::STATUS_APPROVED . ':' . $this->order->id),
+                    InlineKeyboardButton::make('Отменен', callback_data: 'order_set_status:' . Order::STATUS_REJECT . ':' . $this->order->id),
                 )
         );
 

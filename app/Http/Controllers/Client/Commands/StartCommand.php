@@ -18,7 +18,7 @@ class StartCommand extends Command
         $this->user = User::firstOrCreate(
             ['chat_id' => $bot->chatId()],
             [
-                'username' => $bot->user()->username or null,
+                'username' => $bot->user()->username or '<i>Пользователь скрыл свой username</i>',
                 'full_name' => ''
             ]);
 
