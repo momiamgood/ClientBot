@@ -10,6 +10,7 @@ class TelegramController extends Controller
 {
     public function handle(Request $request, Nutgram $bot): void
     {
+        $bot->registerMyCommands();
         $bot->run();
     }
 }

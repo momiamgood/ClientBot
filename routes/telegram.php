@@ -1,10 +1,11 @@
 <?php
 /** @var SergiX44\Nutgram\Nutgram $bot */
 
-use App\Http\Controllers\Client\Commands\InfoController;
-use App\Http\Controllers\Client\Commands\OrderController;
-use App\Http\Controllers\Client\Commands\StartController;
-use App\Http\Controllers\Client\Handlers\OrderConversation;
+use App\Http\Controllers\Admin\Handlers\OrderStatusHandler;
+use App\Http\Controllers\Client\Commands\AboutCommand;
+use App\Http\Controllers\Client\Commands\OrderCommand;
+use App\Http\Controllers\Client\Commands\StartCommand;
+use App\Http\Controllers\Client\Conversations\OrderConversation;
 use App\Http\Controllers\TelegramController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,10 +21,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/webhook', [TelegramController::class, 'handle']);
 
-$bot->onCommand('start', StartController::class);
-$bot->onCommand('info', InfoController::class);
-$bot->onCommand('products', StartController::class);
-$bot->onCommand('my-orders', StartController::class);
-$bot->onCommand('order', OrderController::class);
-$bot->onCallbackQuery('create_order', OrderConversation::class);
+$bot->onCallbackQueryData('create_order:1', OrderConversation::class);
+
+$bot->registerCommand(StartCommand::class);
+$bot->registerCommand(AboutCommand::class);
+$bot->registerCommand(OrderCommand::class);
+
+$bot->onCallbackQueryData('order_set_status:{status}:{order_id}', OrderStatusHandler::class);
+
+
+
+
+
 
